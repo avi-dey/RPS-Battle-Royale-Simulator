@@ -6,7 +6,6 @@ import {
   DEFAULT_LOGFILE,
   DEFAULT_UNITS_PER_KIND,
   DEFAULT_WIDTH,
-  POSTGAME_DELAY_MS,
 } from "./constants.js";
 import { RPSBattleRoyaleSimulator, pickContrastColorFromRgb } from "./arena.js";
 import { ICON_DRAW_SIZE, loadIcons } from "./icons.js";
@@ -17,6 +16,7 @@ import {
 } from "./color.js";
 import { createRng } from "./random.js";
 import { parseBlocksFromJson, parseBlocksOption } from "./blocks.js";
+import { promptBet, showBetResult } from "./bet.js";
 
 function paramsFromUrl() {
   const p = new URLSearchParams(location.search);
@@ -39,12 +39,12 @@ function paramsFromUrl() {
 }
 
 class CanvasApp {
-  constructor(canvas, opts, blocksConfig, icons) {
+  constructor(canvas, opts, blocksConfig, icons, betKind) {
+    this.betKind = betKind;
     this.icons = icons;
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.opts = opts;
-    this.postgameTimer = null;
     this.countdownTimer = null;
     this.bgImage = null;
     this.uiTextColor = "white";
@@ -206,18 +206,23 @@ class CanvasApp {
   }
 
   _loop() {
-    if (this.postgameTimer != null) return;
-
     const ended = this.arena.tick();
     this._draw();
 
     if (ended) {
-      if (this.opts.numGames > 0 && this.arena.gamesPlayed >= this.opts.numGames) {
-        this._flushLogDownload();
-        return;
-      }
-      this.postgameTimer = setTimeout(() => {
-        this.postgameTimer = null;
+      const winner = this.arena.units[0]?.kind;
+      if (!winner) return;
+
+      showBetResult(winner === this.betKind, winner).then(async () => {
+        if (
+          this.opts.numGames > 0 &&
+          this.arena.gamesPlayed >= this.opts.numGames
+        ) {
+          this._flushLogDownload();
+          return;
+        }
+
+        this.betKind = await promptBet();
         this.arena.advanceSeedForNextGame();
         this.arena.reset();
         this._draw();
@@ -227,7 +232,7 @@ class CanvasApp {
         } else {
           this._loop();
         }
-      }, POSTGAME_DELAY_MS);
+      });
       return;
     }
 
@@ -269,8 +274,9 @@ async function main() {
   }
 
   const icons = await loadIcons();
+  const betKind = await promptBet();
   const canvas = document.getElementById("arena");
-  new CanvasApp(canvas, opts, blocksConfig, icons);
+  new CanvasApp(canvas, opts, blocksConfig, icons, betKind);
 }
 
 main();
