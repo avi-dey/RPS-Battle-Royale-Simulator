@@ -1,114 +1,38 @@
 # RPS Battle Royale Simulator
 
-A simulation of Rock Paper Scissors units chasing each other. Highly configurable.
+A browser-based simulation where Rock, Paper, and Scissors units move and compete until one type remains.
 
-- Each unit chases the nearest unit it can defeat, or flees the nearest unit that can defeat it — whichever is closer.
-- On contact, the loser converts to the winner's kind.
-- When only one kind remains, the game ends; either exits (if a seed was specified) or restarts with a fresh random seed.
+## Run locally
 
-## Requirements
+1. Install dependencies:
 
-Node.js 18+
+```bash
+npm install
+```
 
-## Browser GUI
+2. Start the web version:
 
 ```bash
 npm run web
 ```
 
-Open http://localhost:8080/ — optional query params: `?u=50&d=30&seed=123&showstats&blocks=5&bg=#222`
+3. Open your browser to:
 
-## Headless (Node)
-
-```bash
-node src/cli.js --windowless --seed 42 -u 50
-# or
-npm run headless -- --seed 42 -u 50
+```text
+http://localhost:8080/
 ```
 
-Run `node src/cli.js --help` for all options (`-s`, `-u`, `-d`, `--seed`, `-n`, `--blocks`, `--no-log`, etc.).
+## Deployed site
 
-## Source layout
+Run the project live at:
 
-- `src/arena.js` — simulation core (shared); units spawn in a triangle (rock north, paper south-east, scissors south-west)
-- `src/spawn.js` — triangular spawn zones per kind
-- `src/browser.js` + `index.html` — canvas UI
-- `src/cli.js` — Node headless runner
-- `assets/icons/` — unit icons for the browser UI (`rock.svg`, `paper.svg`, `scissor.png`)
+https://rps-battle-royale-simulator.onrender.com/
 
-Replace those files to customize appearance. Paths are configured in `src/icons.js` (PNG and SVG both work).
+## Requirements
 
-## Features
+- Node.js 18+
 
-- **Deterministic runs:** `--seed` fixes the RNG seed (plays a single game and exits).
-- **Logging:** `rps_battle_royale_log.txt` records settings, a header row, conversion snapshots, and an end-of-game summary including elapsed time and total simulation step count.
+## Notes
 
-## Command-line options
-
-* `-u N`, `--units N`
-  Number of units per kind (default `50`).
-  With 3 kinds, total units = `N * 3`.
-
-* `-d MS`, `--delay MS`
-  Tick delay in milliseconds (default `30`). Minimum is 1.
-
-* `--seed INT`
-  Use a fixed random seed. If multiple games are run, the first game uses this seed, then increments sequentially (`seed+1`, `seed+2`, ...).
-
-* `-n N`, `--num-games N`
-  Number of games to run. `0` = unlimited (default).
-  In headless mode, the process exits after the last game.
-
-## Logging
-
-* `--logfile FILE`
-  Log file name (default `rps_battle_royale_log.txt`).
-
-* `--no-log`
-  Disable writing to the log file (stdout logs still shown unless `--quiet`).
-
-* `-q`, `--quiet`
-  Suppress stdout logging.
-  Combine with `--no-log` for a fully silent run.
-
-Example log file:
-
-```
-start=2025-08-23 12:34:56 | size=1000x700 | units=150 | delay_ms=30 | seed=987654 | kinds=paper,rock,scissors | fast_forward=on
-step,📄,🪨,✂️
-42,60,55,35
-57,65,50,35
---snip--
-game_end at 2025-08-23 12:35:49; elapsed=53.123s; steps=172
-```
-
-### Blocks / Obstacles
-
-* `--blocks N`
-  Place `N` random rectangular blocks that units cannot enter. Blocks are regenerated on each reset.
-  Each block is ≤ 20% of arena area. Overlap is allowed.
-
-* `--blocks FILE.json`
-  Use fixed blocks from JSON file.
-  Format:
-
-  ```json
-  {
-    "blocks": [
-      {"top": 0, "left": 0, "width": 100, "height": 100, "color": "green"},
-      {"top": 200, "left": 150, "width": 150, "height": 80}
-    ]
-  }
-  ```
-
-  * `color` is optional (auto-contrasts with background if missing).
-  * JSON blocks are reused on each reset.
-
-### Windowless mode
-
-* `--windowless`
-  Run without the browser UI.
-
-  * Defaults to 1 game unless `-n` is specified.
-  * No rendering; runs as fast as possible.
-  * Logs are printed to stdout unless `--quiet` is set, and optionally to file unless `--no-log` is set.
+- The browser UI is the main way to interact with the simulation.
+- There is also a headless Node runner in `src/cli.js` for advanced usage, but the primary setup is `npm run web`.
