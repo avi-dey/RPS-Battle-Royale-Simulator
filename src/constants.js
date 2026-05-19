@@ -9,12 +9,15 @@ export const DEFAULT_LOGFILE = "rps_battle_royale_log.txt";
 export const RADIUS = 24;
 export const MIN_SEP = RADIUS * 2 + 6;
 
-export const BASE_SPEED = 2.2;
-export const ATTRACTION = 1.6;
-export const REPULSION = 1.8;
+export const BASE_SPEED = 4.5;
+export const ATTRACTION = 2.2;
+export const REPULSION = 2.4;
 export const ALLY_REPEL = 1.3;
-export const WALL_BOUNCE = 0.9;
-export const JITTER = 0.25;
+export const WALL_BOUNCE = 0.92;
+export const JITTER = 0.85;
+export const WANDER = 0.65;
+export const STEER_WOBBLE = 0.22;
+export const BOUNCE_JITTER = 0.65;
 
 export const POSTGAME_DELAY_MS = 5000;
 

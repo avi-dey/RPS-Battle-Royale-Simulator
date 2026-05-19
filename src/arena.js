@@ -7,7 +7,10 @@ import {
   ALLY_REPEL,
   ATTRACTION,
   BASE_SPEED,
+  BOUNCE_JITTER,
   JITTER,
+  STEER_WOBBLE,
+  WANDER,
   MIN_SEP,
   RADIUS,
   REPULSION,
@@ -359,7 +362,7 @@ export class RPSBattleRoyaleSimulator {
         if (tooClose) continue;
 
         const angle = this.rng.uniform(0, 2 * Math.PI);
-        const speed = this.rng.uniform(0, BASE_SPEED);
+        const speed = this.rng.uniform(BASE_SPEED * 0.5, BASE_SPEED);
         return new Emoji(
           kind,
           x,
@@ -373,7 +376,7 @@ export class RPSBattleRoyaleSimulator {
     const x = this.rng.uniform(pad, this.width - pad);
     const y = this.rng.uniform(pad, this.height - pad);
     const angle = this.rng.uniform(0, 2 * Math.PI);
-    const speed = this.rng.uniform(0, BASE_SPEED);
+    const speed = this.rng.uniform(BASE_SPEED * 0.5, BASE_SPEED);
     return new Emoji(
       kind,
       x,
@@ -437,6 +440,10 @@ export class RPSBattleRoyaleSimulator {
       const [dx, dy] = normalize(me.x - closestPred.x, me.y - closestPred.y);
       fx += dx * REPULSION;
       fy += dy * REPULSION;
+    } else {
+      const angle = this.rng.uniform(0, 2 * Math.PI);
+      fx += Math.cos(angle) * WANDER;
+      fy += Math.sin(angle) * WANDER;
     }
 
     for (const u of this.units) {
@@ -460,6 +467,15 @@ export class RPSBattleRoyaleSimulator {
     const [fx, fy] = this._forceClosestChoice(u);
     u.vx += fx;
     u.vy += fy;
+
+    const turn = this.rng.uniform(-STEER_WOBBLE, STEER_WOBBLE);
+    const cos = Math.cos(turn);
+    const sin = Math.sin(turn);
+    const vx = u.vx * cos - u.vy * sin;
+    const vy = u.vx * sin + u.vy * cos;
+    u.vx = vx;
+    u.vy = vy;
+
     [u.vx, u.vy] = capSpeed(u.vx, u.vy, BASE_SPEED);
   }
 
@@ -518,8 +534,8 @@ export class RPSBattleRoyaleSimulator {
     }
 
     if (bounced) {
-      u.vx += this.rng.uniform(-0.2, 0.2);
-      u.vy += this.rng.uniform(-0.2, 0.2);
+      u.vx += this.rng.uniform(-BOUNCE_JITTER, BOUNCE_JITTER);
+      u.vy += this.rng.uniform(-BOUNCE_JITTER, BOUNCE_JITTER);
       [u.vx, u.vy] = capSpeed(u.vx, u.vy, BASE_SPEED);
     }
 
