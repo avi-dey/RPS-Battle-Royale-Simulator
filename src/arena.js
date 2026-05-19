@@ -15,6 +15,7 @@ import {
 } from "./constants.js";
 import { pickContrastColor, pickContrastColorFromRgb } from "./color.js";
 import { createRng } from "./random.js";
+import { getSpawnTriangles, randomPointInTriangle } from "./spawn.js";
 
 function distanceBetween(x1, y1, x2, y2) {
   const dx = x1 - x2;
@@ -318,64 +319,68 @@ export class RPSBattleRoyaleSimulator {
     this._inCountdown = false;
     this.delayMs = this.baseDelayMs;
 
-    const kinds = [];
-    for (const k of this.kindsOrder) {
-      for (let i = 0; i < this.unitsPerKind; i++) kinds.push(k);
-    }
-    this._shuffle(kinds);
+    const spawnZones = getSpawnTriangles(this.width, this.height);
+    const pad = RADIUS + 2;
 
-    let placed = 0;
-    let attempts = 0;
-    const maxAttempts = kinds.length * 500;
-    while (placed < kinds.length && attempts < maxAttempts) {
-      attempts += 1;
-      const x = this.rng.uniform(RADIUS + 2, this.width - RADIUS - 2);
-      const y = this.rng.uniform(RADIUS + 2, this.height - RADIUS - 2);
-
-      if (this._pointInAnyBlock(x, y, RADIUS)) continue;
-
-      let tooClose = false;
-      for (const u of this.units) {
-        if (distanceBetween(x, y, u.x, u.y) < MIN_SEP * MIN_SEP) {
-          tooClose = true;
-          break;
-        }
+    for (const kind of this.kindsOrder) {
+      const triangle = spawnZones[kind];
+      for (let i = 0; i < this.unitsPerKind; i++) {
+        const unit = this._placeUnitInZone(kind, triangle, pad);
+        if (unit) this.units.push(unit);
       }
-      if (tooClose) continue;
-
-      const kind = kinds[placed];
-      const angle = this.rng.uniform(0, 2 * Math.PI);
-      const speed = this.rng.uniform(0, BASE_SPEED);
-      this.units.push(
-        new Emoji(kind, x, y, Math.cos(angle) * speed, Math.sin(angle) * speed)
-      );
-      placed += 1;
-    }
-
-    for (let i = placed; i < kinds.length; i++) {
-      const k = kinds[i];
-      let x;
-      let y;
-      let tries = 0;
-      do {
-        tries += 1;
-        x = this.rng.uniform(RADIUS + 2, this.width - RADIUS - 2);
-        y = this.rng.uniform(RADIUS + 2, this.height - RADIUS - 2);
-      } while (this._pointInAnyBlock(x, y, RADIUS) && tries < 2000);
-
-      const angle = this.rng.uniform(0, 2 * Math.PI);
-      const speed = this.rng.uniform(0, BASE_SPEED);
-      this.units.push(
-        new Emoji(k, x, y, Math.cos(angle) * speed, Math.sin(angle) * speed)
-      );
     }
   }
 
-  _shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(this.rng.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+  _placeUnitInZone(kind, triangle, pad) {
+    const samplers = [];
+    if (triangle) {
+      const [v0, v1, v2] = triangle;
+      samplers.push(() => randomPointInTriangle(this.rng, v0, v1, v2));
     }
+    samplers.push(() => ({
+      x: this.rng.uniform(pad, this.width - pad),
+      y: this.rng.uniform(pad, this.height - pad),
+    }));
+
+    for (const samplePoint of samplers) {
+      for (let attempts = 0; attempts < 500; attempts++) {
+        const { x, y } = samplePoint();
+        if (x < pad || x > this.width - pad || y < pad || y > this.height - pad) {
+          continue;
+        }
+        if (this._pointInAnyBlock(x, y, RADIUS)) continue;
+        let tooClose = false;
+        for (const u of this.units) {
+          if (distanceBetween(x, y, u.x, u.y) < MIN_SEP * MIN_SEP) {
+            tooClose = true;
+            break;
+          }
+        }
+        if (tooClose) continue;
+
+        const angle = this.rng.uniform(0, 2 * Math.PI);
+        const speed = this.rng.uniform(0, BASE_SPEED);
+        return new Emoji(
+          kind,
+          x,
+          y,
+          Math.cos(angle) * speed,
+          Math.sin(angle) * speed
+        );
+      }
+    }
+
+    const x = this.rng.uniform(pad, this.width - pad);
+    const y = this.rng.uniform(pad, this.height - pad);
+    const angle = this.rng.uniform(0, 2 * Math.PI);
+    const speed = this.rng.uniform(0, BASE_SPEED);
+    return new Emoji(
+      kind,
+      x,
+      y,
+      Math.cos(angle) * speed,
+      Math.sin(angle) * speed
+    );
   }
 
   getStatsText() {

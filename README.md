@@ -30,7 +30,8 @@ Run `node src/cli.js --help` for all options (`-s`, `-u`, `-d`, `--seed`, `-n`, 
 
 ## Source layout
 
-- `src/arena.js` — simulation core (shared)
+- `src/arena.js` — simulation core (shared); units spawn in a triangle (rock north, paper south-east, scissors south-west)
+- `src/spawn.js` — triangular spawn zones per kind
 - `src/browser.js` + `index.html` — canvas UI
 - `src/cli.js` — Node headless runner
 - `assets/icons/` — unit icons for the browser UI (`rock.svg`, `paper.svg`, `scissor.png`)
