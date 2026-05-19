@@ -1,4 +1,4 @@
-# RPS Arena
+# RPS Battle Royale Simulator
 
 A simulation of Rock Paper Scissors units chasing each other. Highly configurable.
 
@@ -38,7 +38,7 @@ Run `node src/cli.js --help` for all options (`-s`, `-u`, `-d`, `--seed`, `-n`, 
 
 - **Fast Forward:** When only two kinds remain and one beats the other (eventual victory), delay auto-switches to 1 ms to speed up the finish. Enabled by default; disable with `--no-ff`.
 - **Deterministic runs:** `--seed` fixes the RNG seed (plays a single game and exits).
-- **Logging:** `rps_arena_log.txt` records settings, a header row, conversion snapshots, and an end-of-game summary including elapsed time and total simulation step count.
+- **Logging:** `rps_battle_royale_log.txt` records settings, a header row, conversion snapshots, and an end-of-game summary including elapsed time and total simulation step count.
 
 ## Command-line options
 
@@ -62,7 +62,7 @@ Run `node src/cli.js --help` for all options (`-s`, `-u`, `-d`, `--seed`, `-n`, 
 ## Logging
 
 * `--logfile FILE`
-  Log file name (default `rps_arena_log.txt`).
+  Log file name (default `rps_battle_royale_log.txt`).
 
 * `--no-log`
   Disable writing to the log file (stdout logs still shown unless `--quiet`).

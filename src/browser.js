@@ -3,13 +3,14 @@ import {
   DEFAULT_BLOCKS,
   DEFAULT_DELAY_MS,
   DEFAULT_HEIGHT,
+  DEFAULT_LOGFILE,
   DEFAULT_UNITS_PER_KIND,
   DEFAULT_WIDTH,
   FONT_SIZE,
   POSTGAME_DELAY_MS,
   RADIUS,
 } from "./constants.js";
-import { RPSArena, pickContrastColorFromRgb } from "./arena.js";
+import { RPSBattleRoyaleSimulator, pickContrastColorFromRgb } from "./arena.js";
 import {
   averageRgbFromImageData,
   pickContrastColor,
@@ -55,7 +56,7 @@ class CanvasApp {
     const rng =
       opts.seed != null ? createRng(opts.seed) : createRng(null);
 
-    this.arena = new RPSArena({
+    this.arena = new RPSBattleRoyaleSimulator({
       width: opts.width,
       height: opts.height,
       unitsPerKind: opts.units,
@@ -242,7 +243,7 @@ class CanvasApp {
     });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "rps_arena_log.txt";
+    a.download = DEFAULT_LOGFILE;
     a.click();
     URL.revokeObjectURL(a.href);
   }

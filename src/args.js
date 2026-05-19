@@ -103,9 +103,9 @@ export function parseArgs(argv = process.argv.slice(2)) {
 }
 
 export function printHelp() {
-  console.log(`RPS Arena
+  console.log(`RPS Battle Royale Simulator
 
-usage: rpsarena [options]
+usage: rps-battle-royale [options]
 
 options:
   -h, --help            show this help message and exit

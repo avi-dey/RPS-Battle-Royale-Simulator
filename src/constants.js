@@ -4,7 +4,7 @@ export const DEFAULT_UNITS_PER_KIND = 11;
 export const DEFAULT_DELAY_MS = 30;
 export const DEFAULT_BACKGROUND = "white";
 export const DEFAULT_BLOCKS = "0";
-export const DEFAULT_LOGFILE = "rps_arena_log.txt";
+export const DEFAULT_LOGFILE = "rps_battle_royale_log.txt";
 
 export const FONT_SIZE = 42;
 export const RADIUS = 24;

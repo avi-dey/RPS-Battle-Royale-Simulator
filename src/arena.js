@@ -48,7 +48,7 @@ export class Emoji {
   }
 }
 
-export class RPSArena {
+export class RPSBattleRoyaleSimulator {
   constructor(options = {}) {
     const {
       width,

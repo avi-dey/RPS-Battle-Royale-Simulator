@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
-import { RPSArena } from "./arena.js";
+import { RPSBattleRoyaleSimulator } from "./arena.js";
 import { parseBlocksOption } from "./blocks.js";
 import { parseArgs, printHelp } from "./args.js";
 
@@ -49,7 +49,7 @@ function main() {
     process.exit(1);
   }
 
-  const arena = new RPSArena({
+  const arena = new RPSBattleRoyaleSimulator({
     width: opts.width,
     height: opts.height,
     unitsPerKind: opts.units,

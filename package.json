@@ -1,11 +1,11 @@
 {
-  "name": "rpsarena",
+  "name": "rps-battle-royale-simulator",
   "version": "0.3.0",
-  "description": "Rock Paper Scissors units chase each other — browser GUI and Node headless simulation.",
+  "description": "RPS Battle Royale Simulator — Rock Paper Scissors units chase each other in browser GUI and Node headless modes.",
   "type": "module",
   "main": "src/arena.js",
   "bin": {
-    "rpsarena": "src/cli.js"
+    "rps-battle-royale": "src/cli.js"
   },
   "scripts": {
     "start": "node src/cli.js --windowless",

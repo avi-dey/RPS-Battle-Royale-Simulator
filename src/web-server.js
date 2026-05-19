@@ -44,5 +44,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(port, () => {
-  console.log(`RPS Arena: http://localhost:${port}/`);
+  console.log(`RPS Battle Royale Simulator: http://localhost:${port}/`);
 });
