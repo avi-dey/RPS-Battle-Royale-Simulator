@@ -1,0 +1,25 @@
+{
+  "name": "rpsarena",
+  "version": "0.3.0",
+  "description": "Rock Paper Scissors units chase each other — browser GUI and Node headless simulation.",
+  "type": "module",
+  "main": "src/arena.js",
+  "bin": {
+    "rpsarena": "src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js --windowless",
+    "web": "node src/web-server.js",
+    "headless": "node src/cli.js --windowless"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "simulation",
+    "rock-paper-scissors",
+    "game"
+  ],
+  "author": "Al Sweigart",
+  "license": "MIT"
+}
