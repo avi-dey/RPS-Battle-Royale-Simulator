@@ -2,7 +2,7 @@ export const DEFAULT_WIDTH = 1000;
 export const DEFAULT_HEIGHT = 1000;
 export const DEFAULT_UNITS_PER_KIND = 11;
 export const DEFAULT_DELAY_MS = 30;
-export const DEFAULT_BACKGROUND = "white";
+export const DEFAULT_BACKGROUND = "lightgreen";
 export const DEFAULT_BLOCKS = "0";
 export const DEFAULT_LOGFILE = "rps_battle_royale_log.txt";
 

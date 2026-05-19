@@ -119,9 +119,11 @@ class CanvasApp {
     } catch {
       this.uiTextColor = pickContrastColor("white");
       this._bgMode = "color";
-      this._bgColor = "white";
+      this._bgColor = DEFAULT_BACKGROUND;
       if (!this.opts.quiet) {
-        console.warn(`Could not load background '${src}', using white.`);
+        console.warn(
+          `Could not load background '${src}', using ${DEFAULT_BACKGROUND}.`
+        );
       }
     }
   }

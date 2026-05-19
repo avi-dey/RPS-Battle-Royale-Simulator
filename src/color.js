@@ -22,6 +22,7 @@ const COLOR_NAME_MAP = {
   olive: [128, 128, 0],
   silver: [192, 192, 192],
   lime: [0, 255, 0],
+  lightgreen: [144, 238, 144],
   orange: [255, 165, 0],
   pink: [255, 192, 203],
   brown: [165, 42, 42],
