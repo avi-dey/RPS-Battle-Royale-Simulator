@@ -5,7 +5,7 @@ export const ICON_DRAW_SIZE = RADIUS * 2;
 export const DEFAULT_ICON_PATHS = {
   rock: "/assets/icons/rock.svg",
   paper: "/assets/icons/paper.svg",
-  scissors: "/assets/icons/scissors.svg",
+  scissors: "/assets/icons/scissor.png",
 };
 
 /** @returns {Promise<Map<string, HTMLImageElement>>} */

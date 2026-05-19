@@ -33,9 +33,9 @@ Run `node src/cli.js --help` for all options (`-s`, `-u`, `-d`, `--seed`, `-n`, 
 - `src/arena.js` — simulation core (shared)
 - `src/browser.js` + `index.html` — canvas UI
 - `src/cli.js` — Node headless runner
-- `assets/icons/` — SVG icons for rock, paper, and scissors (browser UI)
+- `assets/icons/` — unit icons for the browser UI (`rock.svg`, `paper.svg`, `scissor.png`)
 
-Replace the SVG files in `assets/icons/` to customize unit appearance. Paths are configured in `src/icons.js`.
+Replace those files to customize appearance. Paths are configured in `src/icons.js` (PNG and SVG both work).
 
 ## Features
 
