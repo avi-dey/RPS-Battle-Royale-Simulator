@@ -26,7 +26,7 @@ node src/cli.js --windowless --seed 42 -u 50
 npm run headless -- --seed 42 -u 50
 ```
 
-Run `node src/cli.js --help` for all options (`-s`, `-u`, `-d`, `--seed`, `-n`, `--no-ff`, `--blocks`, `--no-log`, etc.).
+Run `node src/cli.js --help` for all options (`-s`, `-u`, `-d`, `--seed`, `-n`, `--blocks`, `--no-log`, etc.).
 
 ## Source layout
 
@@ -40,7 +40,6 @@ Replace those files to customize appearance. Paths are configured in `src/icons.
 
 ## Features
 
-- **Fast Forward:** When only two kinds remain and one beats the other (eventual victory), delay auto-switches to 1 ms to speed up the finish. Enabled by default; disable with `--no-ff`.
 - **Deterministic runs:** `--seed` fixes the RNG seed (plays a single game and exits).
 - **Logging:** `rps_battle_royale_log.txt` records settings, a header row, conversion snapshots, and an end-of-game summary including elapsed time and total simulation step count.
 
@@ -59,9 +58,6 @@ Replace those files to customize appearance. Paths are configured in `src/icons.
 * `-n N`, `--num-games N`
   Number of games to run. `0` = unlimited (default).
   In headless mode, the process exits after the last game.
-
-* `--no-ff`
-  Disable fast-forward. Normally, if only two kinds remain and one beats the other, the simulation speeds up by setting delay to 1ms.
 
 ## Logging
 

@@ -16,7 +16,6 @@ export function parseArgs(argv = process.argv.slice(2)) {
     delay: DEFAULT_DELAY_MS,
     seed: null,
     numGames: 0,
-    noFf: false,
     bg: DEFAULT_BACKGROUND,
     countdown: 0,
     windowless: false,
@@ -61,9 +60,6 @@ export function parseArgs(argv = process.argv.slice(2)) {
       case "-n":
       case "--num-games":
         opts.numGames = parseInt(args.shift(), 10);
-        break;
-      case "--no-ff":
-        opts.noFf = true;
         break;
       case "--bg":
         opts.bg = args.shift();
@@ -115,7 +111,6 @@ options:
   -d, --delay MS        Tick delay in ms (default ${DEFAULT_DELAY_MS})
   --seed INT            Random seed for first game; then seed+1, seed+2, ...
   -n, --num-games N     Number of games (0=unlimited)
-  --no-ff               Disable fast-forward when one kind wins
   --bg COLOR|FILE       Background color or image path (windowed / web)
   --countdown SEC       Pause after placement (windowed / web)
   --windowless          Run without GUI (Node only)

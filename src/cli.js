@@ -58,7 +58,6 @@ function main() {
     numGames: opts.numGames,
     logFilename: opts.logfile,
     noLog: opts.noLog,
-    ffEnabled: !opts.noFf,
     backgroundColor: opts.bg,
     windowless: true,
     quiet: opts.quiet,

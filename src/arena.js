@@ -44,7 +44,6 @@ export class RPSBattleRoyaleSimulator {
       numGames = 0,
       logFilename = DEFAULT_LOGFILE,
       noLog = false,
-      ffEnabled = true,
       backgroundColor = DEFAULT_BACKGROUND,
       countdownS = 0,
       windowless = false,
@@ -74,9 +73,6 @@ export class RPSBattleRoyaleSimulator {
 
     this.delayMs = Math.max(1, Math.floor(delayMs));
     this.baseDelayMs = this.delayMs;
-
-    this.ffEnabled = ffEnabled;
-    this.ffActive = false;
 
     this.countdownS = windowless ? 0 : Math.max(0, Math.floor(countdownS));
     this._inCountdown = false;
@@ -249,7 +245,6 @@ export class RPSBattleRoyaleSimulator {
       `delay_ms=${this.delayMs}`,
       `seed=${this.fixedSeed != null ? this.currentSeed : "random"}`,
       `kinds=${this.kindsOrder.join(",")}`,
-      `fast_forward=${this.ffEnabled ? "on" : "off"}`,
       `num_games=${this.numGames}`,
       `blocks=${blocksDesc}`,
       `file_logging=${this.noLog ? "off" : "on"}`,
@@ -298,7 +293,6 @@ export class RPSBattleRoyaleSimulator {
     this.units = [];
     this.stepNum = 0;
     this.gameStartTime = Date.now();
-    this.ffActive = false;
     this._inCountdown = false;
     this.delayMs = this.baseDelayMs;
 
@@ -519,19 +513,6 @@ export class RPSBattleRoyaleSimulator {
     return converted;
   }
 
-  _maybeFastForward() {
-    if (!this.ffEnabled || this.ffActive) return;
-    const kindsPresent = new Set(this.units.map((u) => u.kind));
-    if (kindsPresent.size !== 2) return;
-    const [a, b] = [...kindsPresent];
-    if (this.beats[a] === b || this.beats[b] === a) {
-      if (this.delayMs > 1) {
-        this.delayMs = 1;
-        this.ffActive = true;
-      }
-    }
-  }
-
   /** One simulation tick. Returns true if the current game ended. */
   tick() {
     if (this._inCountdown) return false;
@@ -540,7 +521,6 @@ export class RPSBattleRoyaleSimulator {
     for (const u of this.units) this._move(u);
     const converted = this._handleUnitCollisions();
     this._logCountsIfNeeded(converted);
-    this._maybeFastForward();
 
     const kinds = new Set(this.units.map((u) => u.kind));
     if (kinds.size === 1) {
@@ -567,7 +547,6 @@ export class RPSBattleRoyaleSimulator {
     while (true) {
       this.stepNum = 0;
       this.gameStartTime = Date.now();
-      this.ffActive = false;
       while (true) {
         if (this.tick()) break;
       }
