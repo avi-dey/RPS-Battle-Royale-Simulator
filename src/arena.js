@@ -4,17 +4,11 @@ import {
   DEFAULT_BLOCKS,
   DEFAULT_LOGFILE,
   DEFAULT_LOSES_TO,
-  ALLY_REPEL,
-  ATTRACTION,
   BASE_SPEED,
-  BOUNCE_JITTER,
-  JITTER,
-  STEER_WOBBLE,
-  WANDER,
   MIN_SEP,
   MIN_WALL_BOUNCE_SPEED,
   RADIUS,
-  REPULSION,
+  UNIT_COLLIDE_DIST,
   WALL_BOUNCE,
 } from "./constants.js";
 import { pickContrastColor, pickContrastColorFromRgb } from "./color.js";
@@ -25,21 +19,6 @@ function distanceBetween(x1, y1, x2, y2) {
   const dx = x1 - x2;
   const dy = y1 - y2;
   return dx * dx + dy * dy;
-}
-
-function normalize(dx, dy) {
-  const mag = Math.hypot(dx, dy);
-  if (mag === 0) return [0, 0];
-  return [dx / mag, dy / mag];
-}
-
-function capSpeed(vx, vy, cap) {
-  const s = Math.hypot(vx, vy);
-  if (s > cap && s > 0) {
-    const scale = cap / s;
-    return [vx * scale, vy * scale];
-  }
-  return [vx, vy];
 }
 
 export class Emoji {
@@ -362,29 +341,30 @@ export class RPSBattleRoyaleSimulator {
         }
         if (tooClose) continue;
 
-        const angle = this.rng.uniform(0, 2 * Math.PI);
-        const speed = this.rng.uniform(BASE_SPEED * 0.5, BASE_SPEED);
-        return new Emoji(
-          kind,
-          x,
-          y,
-          Math.cos(angle) * speed,
-          Math.sin(angle) * speed
-        );
+        const [vx, vy] = this._randomVelocity();
+        return new Emoji(kind, x, y, vx, vy);
       }
     }
 
     const x = this.rng.uniform(pad, this.width - pad);
     const y = this.rng.uniform(pad, this.height - pad);
+    const [vx, vy] = this._randomVelocity();
+    return new Emoji(kind, x, y, vx, vy);
+  }
+
+  _randomVelocity() {
     const angle = this.rng.uniform(0, 2 * Math.PI);
-    const speed = this.rng.uniform(BASE_SPEED * 0.5, BASE_SPEED);
-    return new Emoji(
-      kind,
-      x,
-      y,
-      Math.cos(angle) * speed,
-      Math.sin(angle) * speed
-    );
+    return [Math.cos(angle) * BASE_SPEED, Math.sin(angle) * BASE_SPEED];
+  }
+
+  _normalizeSpeed(u) {
+    const s = Math.hypot(u.vx, u.vy);
+    if (s < 1e-6) {
+      [u.vx, u.vy] = this._randomVelocity();
+      return;
+    }
+    u.vx = (u.vx / s) * BASE_SPEED;
+    u.vy = (u.vy / s) * BASE_SPEED;
   }
 
   getStatsText() {
@@ -394,115 +374,9 @@ export class RPSBattleRoyaleSimulator {
     return `t=${elapsed.toFixed(1)}s step=${this.stepNum} ${parts.join(" ")}`;
   }
 
-  _forceClosestChoice(me) {
-    const preyKind = this.beats[me.kind];
-    const predatorKind = this.losesTo[me.kind];
-
-    let closestPrey = null;
-    let closestPred = null;
-    let bestPreyD2 = Infinity;
-    let bestPredD2 = Infinity;
-
-    for (const u of this.units) {
-      if (u === me) continue;
-      const d2 = distanceBetween(me.x, me.y, u.x, u.y);
-      if (u.kind === preyKind && d2 < bestPreyD2) {
-        bestPreyD2 = d2;
-        closestPrey = u;
-      } else if (u.kind === predatorKind && d2 < bestPredD2) {
-        bestPredD2 = d2;
-        closestPred = u;
-      }
-    }
-
-    let fx = 0;
-    let fy = 0;
-    if (closestPrey && closestPred) {
-      if (bestPreyD2 <= bestPredD2) {
-        const [dx, dy] = normalize(
-          closestPrey.x - me.x,
-          closestPrey.y - me.y
-        );
-        fx += dx * ATTRACTION;
-        fy += dy * ATTRACTION;
-      } else {
-        const [dx, dy] = normalize(
-          me.x - closestPred.x,
-          me.y - closestPred.y
-        );
-        fx += dx * REPULSION;
-        fy += dy * REPULSION;
-      }
-    } else if (closestPrey) {
-      const [dx, dy] = normalize(closestPrey.x - me.x, closestPrey.y - me.y);
-      fx += dx * ATTRACTION;
-      fy += dy * ATTRACTION;
-    } else if (closestPred) {
-      const [dx, dy] = normalize(me.x - closestPred.x, me.y - closestPred.y);
-      fx += dx * REPULSION;
-      fy += dy * REPULSION;
-    } else {
-      const angle = this.rng.uniform(0, 2 * Math.PI);
-      fx += Math.cos(angle) * WANDER;
-      fy += Math.sin(angle) * WANDER;
-    }
-
-    for (const u of this.units) {
-      if (u === me || u.kind !== me.kind) continue;
-      const d2 = distanceBetween(me.x, me.y, u.x, u.y);
-      if (d2 < MIN_SEP * MIN_SEP) {
-        const [dx, dy] = normalize(me.x - u.x, me.y - u.y);
-        const denom = Math.max(Math.sqrt(d2), 1);
-        const strength = ALLY_REPEL * (MIN_SEP / denom);
-        fx += dx * strength;
-        fy += dy * strength;
-      }
-    }
-
-    fx += this.rng.uniform(-JITTER, JITTER);
-    fy += this.rng.uniform(-JITTER, JITTER);
-    return [fx, fy];
-  }
-
-  _clampForcesAtWalls(u, fx, fy) {
-    const edge = 2;
-    if (u.x <= RADIUS + edge && fx < 0) fx = 0;
-    if (u.x >= this.width - RADIUS - edge && fx > 0) fx = 0;
-    if (u.y <= RADIUS + edge && fy < 0) fy = 0;
-    if (u.y >= this.height - RADIUS - edge && fy > 0) fy = 0;
-    return [fx, fy];
-  }
-
   _outwardWallSpeed(component, outwardSign) {
     const speed = Math.max(Math.abs(component), MIN_WALL_BOUNCE_SPEED) * WALL_BOUNCE;
     return outwardSign * speed;
-  }
-
-  _applyForces(u) {
-    let [fx, fy] = this._forceClosestChoice(u);
-    [fx, fy] = this._clampForcesAtWalls(u, fx, fy);
-    u.vx += fx;
-    u.vy += fy;
-
-    const turn = this.rng.uniform(-STEER_WOBBLE, STEER_WOBBLE);
-    const cos = Math.cos(turn);
-    const sin = Math.sin(turn);
-    const vx = u.vx * cos - u.vy * sin;
-    const vy = u.vx * sin + u.vy * cos;
-    u.vx = vx;
-    u.vy = vy;
-
-    [u.vx, u.vy] = this._clampVelocityAtWalls(u, u.vx, u.vy);
-    [u.vx, u.vy] = capSpeed(u.vx, u.vy, BASE_SPEED);
-  }
-
-  _clampVelocityAtWalls(u, vx, vy) {
-    const edge = 1;
-    if (u.x <= RADIUS + edge && vx < 0) vx = 0;
-    if (u.x >= this.width - RADIUS - edge && vx > 0) vx = 0;
-    if (u.y <= RADIUS + edge && vy < 0) vy = 0;
-    if (u.y >= this.height - RADIUS - edge && vy > 0) vy = 0;
-    return [vx, vy];
   }
 
   _bounceOffWalls(nx, ny, u) {
@@ -574,29 +448,65 @@ export class RPSBattleRoyaleSimulator {
       blockBounced = true;
     }
 
-    if (blockBounced) {
-      u.vx += this.rng.uniform(-BOUNCE_JITTER, BOUNCE_JITTER);
-      u.vy += this.rng.uniform(-BOUNCE_JITTER, BOUNCE_JITTER);
-    }
-
     if (wallHit.bounced || blockBounced) {
-      [u.vx, u.vy] = capSpeed(u.vx, u.vy, BASE_SPEED);
+      this._normalizeSpeed(u);
     }
 
     u.x = nx;
     u.y = ny;
   }
 
-  _handleCollisionsAndConversions() {
-    const r2 = (RADIUS * 1.1) ** 2;
+  _bouncePair(a, b) {
+    let dx = b.x - a.x;
+    let dy = b.y - a.y;
+    let distSq = dx * dx + dy * dy;
+    if (distSq < 1e-6) {
+      const angle = this.rng.uniform(0, 2 * Math.PI);
+      dx = Math.cos(angle);
+      dy = Math.sin(angle);
+      distSq = 1;
+    }
+    const dist = Math.sqrt(distSq);
+    const nx = dx / dist;
+    const ny = dy / dist;
+
+    const overlap = UNIT_COLLIDE_DIST - dist;
+    if (overlap > 0) {
+      const sep = overlap / 2 + 0.5;
+      a.x -= nx * sep;
+      a.y -= ny * sep;
+      b.x += nx * sep;
+      b.y += ny * sep;
+    }
+
+    const vn = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;
+    if (vn >= 0) return;
+
+    const impulse = vn;
+    a.vx -= impulse * nx;
+    a.vy -= impulse * ny;
+    b.vx += impulse * nx;
+    b.vy += impulse * ny;
+
+    this._normalizeSpeed(a);
+    this._normalizeSpeed(b);
+  }
+
+  _handleUnitCollisions() {
+    const r2 = UNIT_COLLIDE_DIST * UNIT_COLLIDE_DIST;
     const n = this.units.length;
     let converted = false;
+
     for (let i = 0; i < n; i++) {
       const a = this.units[i];
       for (let j = i + 1; j < n; j++) {
         const b = this.units[j];
-        if (a.kind === b.kind) continue;
         if (distanceBetween(a.x, a.y, b.x, b.y) > r2) continue;
+
+        this._bouncePair(a, b);
+
+        if (a.kind === b.kind) continue;
+
         if (this.beats[a.kind] === b.kind) {
           b.kind = a.kind;
           converted = true;
@@ -627,9 +537,8 @@ export class RPSBattleRoyaleSimulator {
     if (this._inCountdown) return false;
 
     this.stepNum += 1;
-    for (const u of this.units) this._applyForces(u);
     for (const u of this.units) this._move(u);
-    const converted = this._handleCollisionsAndConversions();
+    const converted = this._handleUnitCollisions();
     this._logCountsIfNeeded(converted);
     this._maybeFastForward();
 
