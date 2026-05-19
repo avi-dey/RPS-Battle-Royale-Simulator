@@ -13,7 +13,9 @@ export const BASE_SPEED = 4.5;
 export const ATTRACTION = 2.2;
 export const REPULSION = 2.4;
 export const ALLY_REPEL = 1.3;
-export const WALL_BOUNCE = 0.92;
+export const WALL_BOUNCE = 1;
+/** Minimum outward speed after hitting an arena wall (prevents sticking). */
+export const MIN_WALL_BOUNCE_SPEED = BASE_SPEED * 0.85;
 export const JITTER = 0.85;
 export const WANDER = 0.65;
 export const STEER_WOBBLE = 0.22;

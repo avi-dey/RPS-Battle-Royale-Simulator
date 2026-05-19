@@ -12,6 +12,7 @@ import {
   STEER_WOBBLE,
   WANDER,
   MIN_SEP,
+  MIN_WALL_BOUNCE_SPEED,
   RADIUS,
   REPULSION,
   WALL_BOUNCE,
@@ -463,8 +464,23 @@ export class RPSBattleRoyaleSimulator {
     return [fx, fy];
   }
 
+  _clampForcesAtWalls(u, fx, fy) {
+    const edge = 2;
+    if (u.x <= RADIUS + edge && fx < 0) fx = 0;
+    if (u.x >= this.width - RADIUS - edge && fx > 0) fx = 0;
+    if (u.y <= RADIUS + edge && fy < 0) fy = 0;
+    if (u.y >= this.height - RADIUS - edge && fy > 0) fy = 0;
+    return [fx, fy];
+  }
+
+  _outwardWallSpeed(component, outwardSign) {
+    const speed = Math.max(Math.abs(component), MIN_WALL_BOUNCE_SPEED) * WALL_BOUNCE;
+    return outwardSign * speed;
+  }
+
   _applyForces(u) {
-    const [fx, fy] = this._forceClosestChoice(u);
+    let [fx, fy] = this._forceClosestChoice(u);
+    [fx, fy] = this._clampForcesAtWalls(u, fx, fy);
     u.vx += fx;
     u.vy += fy;
 
@@ -476,32 +492,57 @@ export class RPSBattleRoyaleSimulator {
     u.vx = vx;
     u.vy = vy;
 
+    [u.vx, u.vy] = this._clampVelocityAtWalls(u, u.vx, u.vy);
     [u.vx, u.vy] = capSpeed(u.vx, u.vy, BASE_SPEED);
+  }
+
+  _clampVelocityAtWalls(u, vx, vy) {
+    const edge = 1;
+    if (u.x <= RADIUS + edge && vx < 0) vx = 0;
+    if (u.x >= this.width - RADIUS - edge && vx > 0) vx = 0;
+    if (u.y <= RADIUS + edge && vy < 0) vy = 0;
+    if (u.y >= this.height - RADIUS - edge && vy > 0) vy = 0;
+    return [vx, vy];
+  }
+
+  _bounceOffWalls(nx, ny, u) {
+    const minX = RADIUS;
+    const maxX = this.width - RADIUS;
+    const minY = RADIUS;
+    const maxY = this.height - RADIUS;
+    let bounced = false;
+
+    if (nx < minX) {
+      nx = minX;
+      u.vx = this._outwardWallSpeed(u.vx, 1);
+      bounced = true;
+    } else if (nx > maxX) {
+      nx = maxX;
+      u.vx = this._outwardWallSpeed(u.vx, -1);
+      bounced = true;
+    }
+
+    if (ny < minY) {
+      ny = minY;
+      u.vy = this._outwardWallSpeed(u.vy, 1);
+      bounced = true;
+    } else if (ny > maxY) {
+      ny = maxY;
+      u.vy = this._outwardWallSpeed(u.vy, -1);
+      bounced = true;
+    }
+
+    return { nx, ny, bounced };
   }
 
   _move(u) {
     let nx = u.x + u.vx;
     let ny = u.y + u.vy;
-    let bounced = false;
 
-    if (nx < RADIUS) {
-      nx = RADIUS + (RADIUS - nx);
-      u.vx = -u.vx * WALL_BOUNCE;
-      bounced = true;
-    } else if (nx > this.width - RADIUS) {
-      nx = this.width - RADIUS - (nx - (this.width - RADIUS));
-      u.vx = -u.vx * WALL_BOUNCE;
-      bounced = true;
-    }
-    if (ny < RADIUS) {
-      ny = RADIUS + (RADIUS - ny);
-      u.vy = -u.vy * WALL_BOUNCE;
-      bounced = true;
-    } else if (ny > this.height - RADIUS) {
-      ny = this.height - RADIUS - (ny - (this.height - RADIUS));
-      u.vy = -u.vy * WALL_BOUNCE;
-      bounced = true;
-    }
+    const wallHit = this._bounceOffWalls(nx, ny, u);
+    nx = wallHit.nx;
+    ny = wallHit.ny;
+    let blockBounced = false;
 
     for (let iter = 0; iter < 2; iter++) {
       const b = this._collidingBlock(nx, ny, RADIUS);
@@ -519,23 +560,26 @@ export class RPSBattleRoyaleSimulator {
       const m = Math.min(dxLeft, dxRight, dyTop, dyBottom);
       if (m === dxLeft) {
         nx = left;
-        u.vx = -Math.abs(u.vx) * WALL_BOUNCE;
+        u.vx = this._outwardWallSpeed(u.vx, -1);
       } else if (m === dxRight) {
         nx = right;
-        u.vx = Math.abs(u.vx) * WALL_BOUNCE;
+        u.vx = this._outwardWallSpeed(u.vx, 1);
       } else if (m === dyTop) {
         ny = top;
-        u.vy = -Math.abs(u.vy) * WALL_BOUNCE;
+        u.vy = this._outwardWallSpeed(u.vy, -1);
       } else {
         ny = bottom;
-        u.vy = Math.abs(u.vy) * WALL_BOUNCE;
+        u.vy = this._outwardWallSpeed(u.vy, 1);
       }
-      bounced = true;
+      blockBounced = true;
     }
 
-    if (bounced) {
+    if (blockBounced) {
       u.vx += this.rng.uniform(-BOUNCE_JITTER, BOUNCE_JITTER);
       u.vy += this.rng.uniform(-BOUNCE_JITTER, BOUNCE_JITTER);
+    }
+
+    if (wallHit.bounced || blockBounced) {
       [u.vx, u.vy] = capSpeed(u.vx, u.vy, BASE_SPEED);
     }
 
