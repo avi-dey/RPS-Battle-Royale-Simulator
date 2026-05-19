@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="scissors">
+  <circle cx="18" cy="44" r="8" fill="#c0392b" stroke="#922b21" stroke-width="2"/>
+  <circle cx="46" cy="44" r="8" fill="#c0392b" stroke="#922b21" stroke-width="2"/>
+  <path fill="#7f8c8d" stroke="#566573" stroke-width="2" stroke-linejoin="round" d="M18 44 46 20 46 44 18 20z"/>
+  <path fill="#95a5a6" d="M30 32l4-4 6 6-4 4z"/>
+</svg>

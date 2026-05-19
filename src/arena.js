@@ -2,7 +2,6 @@ import {
   DEFAULT_BACKGROUND,
   DEFAULT_BEATS,
   DEFAULT_BLOCKS,
-  DEFAULT_EMOJI,
   DEFAULT_LOGFILE,
   DEFAULT_LOSES_TO,
   ALLY_REPEL,
@@ -55,7 +54,6 @@ export class RPSBattleRoyaleSimulator {
       height,
       unitsPerKind,
       delayMs,
-      emoji = DEFAULT_EMOJI,
       beats = DEFAULT_BEATS,
       losesTo = DEFAULT_LOSES_TO,
       fixedSeed = null,
@@ -83,10 +81,9 @@ export class RPSBattleRoyaleSimulator {
     this.height = Math.floor(height);
     this.bgSource = backgroundColor;
 
-    this.emoji = emoji;
     this.beats = beats;
     this.losesTo = losesTo;
-    this.kindsOrder = Object.keys(this.emoji).sort();
+    this.kindsOrder = Object.keys(beats).sort();
 
     this.unitsPerKind = Math.max(1, Math.floor(unitsPerKind));
     this.numUnits = this.unitsPerKind * this.kindsOrder.length;
@@ -275,7 +272,7 @@ export class RPSBattleRoyaleSimulator {
       `logfile=${this.noLog ? "" : this.logFilename}`,
     ].join(" | ");
     this._log(settings);
-    const header = ["STEP", ...this.kindsOrder.map((k) => this.emoji[k] ?? k)];
+    const header = ["STEP", ...this.kindsOrder];
     this._log(header.join(","));
   }
 

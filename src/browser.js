@@ -6,11 +6,10 @@ import {
   DEFAULT_LOGFILE,
   DEFAULT_UNITS_PER_KIND,
   DEFAULT_WIDTH,
-  FONT_SIZE,
   POSTGAME_DELAY_MS,
-  RADIUS,
 } from "./constants.js";
 import { RPSBattleRoyaleSimulator, pickContrastColorFromRgb } from "./arena.js";
+import { ICON_DRAW_SIZE, loadIcons } from "./icons.js";
 import {
   averageRgbFromImageData,
   pickContrastColor,
@@ -41,7 +40,8 @@ function paramsFromUrl() {
 }
 
 class CanvasApp {
-  constructor(canvas, opts, blocksConfig) {
+  constructor(canvas, opts, blocksConfig, icons) {
+    this.icons = icons;
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.opts = opts;
@@ -157,12 +157,12 @@ class CanvasApp {
       ctx.fillRect(b.x1, b.y1, b.x2 - b.x1, b.y2 - b.y1);
     }
 
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = `${FONT_SIZE}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
-
+    const half = ICON_DRAW_SIZE / 2;
     for (const u of arena.units) {
-      ctx.fillText(arena.emoji[u.kind] ?? u.kind, u.x, u.y);
+      const img = this.icons.get(u.kind);
+      if (img) {
+        ctx.drawImage(img, u.x - half, u.y - half, ICON_DRAW_SIZE, ICON_DRAW_SIZE);
+      }
     }
 
     if (this.opts.showstats) {
@@ -270,8 +270,9 @@ async function main() {
     blocksConfig = parseBlocksOption("0");
   }
 
+  const icons = await loadIcons();
   const canvas = document.getElementById("arena");
-  new CanvasApp(canvas, opts, blocksConfig);
+  new CanvasApp(canvas, opts, blocksConfig, icons);
 }
 
 main();

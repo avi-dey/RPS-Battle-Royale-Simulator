@@ -111,7 +111,7 @@ options:
   -h, --help            show this help message and exit
   -s, --size WIDTH HEIGHT
                         Window size (default ${DEFAULT_WIDTH} ${DEFAULT_HEIGHT})
-  -u, --units N         Units per emoji kind (default ${DEFAULT_UNITS_PER_KIND})
+  -u, --units N         Units per kind (default ${DEFAULT_UNITS_PER_KIND})
   -d, --delay MS        Tick delay in ms (default ${DEFAULT_DELAY_MS})
   --seed INT            Random seed for first game; then seed+1, seed+2, ...
   -n, --num-games N     Number of games (0=unlimited)

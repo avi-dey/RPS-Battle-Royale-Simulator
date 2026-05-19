@@ -33,6 +33,9 @@ Run `node src/cli.js --help` for all options (`-s`, `-u`, `-d`, `--seed`, `-n`, 
 - `src/arena.js` — simulation core (shared)
 - `src/browser.js` + `index.html` — canvas UI
 - `src/cli.js` — Node headless runner
+- `assets/icons/` — SVG icons for rock, paper, and scissors (browser UI)
+
+Replace the SVG files in `assets/icons/` to customize unit appearance. Paths are configured in `src/icons.js`.
 
 ## Features
 
@@ -43,7 +46,7 @@ Run `node src/cli.js --help` for all options (`-s`, `-u`, `-d`, `--seed`, `-n`, 
 ## Command-line options
 
 * `-u N`, `--units N`
-  Number of units per emoji kind (default `50`).
+  Number of units per kind (default `50`).
   With 3 kinds, total units = `N * 3`.
 
 * `-d MS`, `--delay MS`
